@@ -64,7 +64,7 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 /* USER CODE BEGIN PV */
-canw::CAN_Worker can_worker = NULL;
+canw::CAN_Worker *can_worker_ptr = nullptr;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,13 +110,23 @@ int main(void)
 	MX_GPIO_Init();
 	MX_CAN_Init();
 	/* USER CODE BEGIN 2 */
-	can_worker = canw::CAN_Worker(&hcan);
+	uint8_t data[3] = {1,2,3};
+	CAN_HandleTypeDef *link = &hcan;
+	canw::CAN_Worker can = canw::CAN_Worker(&hcan);
+	can_worker_ptr = &can;
+	if (can.enable_itterupt() != true){
+		Error_Handler();
+	}
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+	uint8_t rx_data[] = {0, 0, 0};
 	while (1)
 	{
+
+		can.send_data(data);
+		HAL_Delay(500);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -177,7 +187,7 @@ static void MX_CAN_Init(void)
 	/* USER CODE END CAN_Init 1 */
 	hcan.Instance = CAN1;
 	hcan.Init.Prescaler = 128;
-	hcan.Init.Mode = CAN_MODE_NORMAL;
+	hcan.Init.Mode = CAN_MODE_LOOPBACK;
 	hcan.Init.SyncJumpWidth = CAN_SJW_4TQ;
 	hcan.Init.TimeSeg1 = CAN_BS1_16TQ;
 	hcan.Init.TimeSeg2 = CAN_BS2_8TQ;
@@ -211,7 +221,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**

@@ -13,6 +13,8 @@
 
 namespace canw {
 
+#define CAN_PACK_SIZE 3
+
 class CAN_Worker {
 public:
 	CAN_Worker(CAN_HandleTypeDef *hcan);
@@ -21,6 +23,7 @@ public:
 // Methods
 public:
 	bool init();
+	bool send_data(uint8_t *data);
 
 	// Callback's
 	void CAN_RX0_Callback();
@@ -29,17 +32,18 @@ public:
 	void CAN_ERR_Callback();
 
 // PV methods
-private:
+public:
 	// Enable itterrupt
 	bool enable_itterupt();
 
 // Vars
-private:
+public:
 	CAN_HandleTypeDef 		*hcan;
 	CAN_TxHeaderTypeDef 	CAN_TXHeader;
 	CAN_FilterTypeDef 		CAN_filter;
 	CAN_RxHeaderTypeDef 	CAN_RXHeader;
 	CAN_TxMailBox_TypeDef 	mailBox;
+	uint8_t 				rx_fifo[CAN_PACK_SIZE];
 };
 
 } /* namespace canw */

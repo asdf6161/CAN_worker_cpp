@@ -28,6 +28,7 @@ CAN_Worker::~CAN_Worker() {
 
 bool CAN_Worker::init(){
 	// setting header TX message
+	CAN_TXHeader.DLC					= CAN_PACK_SIZE;
 	CAN_TXHeader.StdId 					= 55;
 	CAN_TXHeader.ExtId 					= 0;
 	CAN_TXHeader.IDE					= CAN_ID_STD;
@@ -47,7 +48,7 @@ bool CAN_Worker::init(){
 	CAN_filter.SlaveStartFilterBank 	= 14;
 
 	// setting header RX message
-	CAN_RXHeader.DLC 					= 3;
+	CAN_RXHeader.DLC 					= CAN_PACK_SIZE;
 	CAN_RXHeader.StdId 					= 55;
 	CAN_RXHeader.ExtId 					= 0;
 	CAN_RXHeader.IDE					= CAN_ID_STD;
@@ -56,12 +57,14 @@ bool CAN_Worker::init(){
 	if (HAL_CAN_ConfigFilter(hcan, &CAN_filter) != HAL_OK)
 	{
 		/* Filter configuration Error */
+		Error_Handler();
 		return false;
 	}
 
 	if (HAL_CAN_Start(hcan) != HAL_OK)
 	{
 		/* Start Error */
+		Error_Handler();
 		return false;
 	}
 
@@ -74,12 +77,15 @@ bool CAN_Worker::init(){
 
 bool CAN_Worker::enable_itterupt(){
 	if (HAL_CAN_ActivateNotification(this->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK){
+		Error_Handler();
 		return false;
 	}
 	if (HAL_CAN_ActivateNotification(this->hcan, CAN_IT_RX_FIFO1_MSG_PENDING) != HAL_OK){
+		Error_Handler();
 		return false;
 	}
 	if (HAL_CAN_ActivateNotification(this->hcan, CAN_IT_ERROR) != HAL_OK){
+		Error_Handler();
 		return false;
 	}
 
@@ -87,10 +93,24 @@ bool CAN_Worker::enable_itterupt(){
 }
 
 //####################################################################################//
+//################################## - Data's send - #################################//
+//####################################################################################//
+bool CAN_Worker::send_data(uint8_t *data){
+	uint32_t mb = HAL_CAN_GetTxMailboxesFreeLevel(hcan);
+	if (HAL_CAN_AddTxMessage(hcan, &CAN_TXHeader, data, &mb) != HAL_OK){
+		return false;
+		Error_Handler();
+	}
+	return true;
+}
+
+//####################################################################################//
 //################################## - Callback's - ##################################//
 //####################################################################################//
 void CAN_Worker::CAN_RX0_Callback(){
-
+	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &CAN_RXHeader, rx_fifo) != HAL_OK){
+		Error_Handler();
+	}
 }
 
 void CAN_Worker::CAN_RX1_Callback(){
@@ -102,7 +122,23 @@ void CAN_Worker::CAN_TX_Callback(){
 }
 
 void CAN_Worker::CAN_ERR_Callback(){
+	// todo - Дописать анализ ошибок
+	uint32_t err_code = HAL_CAN_GetError(hcan);
+	if (err_code == CAN_IT_ERROR_WARNING){  	/*!< Error warning interrupt          */
 
+	}
+	if (err_code == CAN_IT_ERROR_PASSIVE){ 		/*!< Error passive interrupt          */
+
+	}
+	if (err_code == CAN_IT_BUSOFF){				/*!< Bus-off interrupt                */
+
+	}
+	if (err_code == CAN_IT_LAST_ERROR_CODE){	/*!< Last error code interrupt        */
+
+	}
+	if (err_code == CAN_IT_ERROR){				/*!< Error Interrupt                  */
+
+	}
 }
 
 } /* namespace canw */
