@@ -14,6 +14,7 @@
 namespace canw {
 
 #define CAN_PACK_SIZE 3
+#define CAN_ID 3
 
 class CAN_Worker {
 public:
@@ -42,7 +43,7 @@ public:
 	CAN_TxHeaderTypeDef 	CAN_TXHeader;
 	CAN_FilterTypeDef 		CAN_filter;
 	CAN_RxHeaderTypeDef 	CAN_RXHeader;
-	CAN_TxMailBox_TypeDef 	mailBox;
+	uint32_t			 	mailBox;
 	uint8_t 				rx_fifo[CAN_PACK_SIZE];
 };
 

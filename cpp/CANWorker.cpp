@@ -18,8 +18,9 @@ CAN_Worker::CAN_Worker(CAN_HandleTypeDef *hcan) {
 	CAN_TXHeader = {0};
 	CAN_filter = {0};
 	CAN_RXHeader = {0};
-	mailBox = {0};
+	mailBox = 0;
 	init();
+	mailBox = HAL_CAN_GetTxMailboxesFreeLevel(hcan);
 }
 
 CAN_Worker::~CAN_Worker() {
@@ -29,7 +30,7 @@ CAN_Worker::~CAN_Worker() {
 bool CAN_Worker::init(){
 	// setting header TX message
 	CAN_TXHeader.DLC					= CAN_PACK_SIZE;
-	CAN_TXHeader.StdId 					= 55;
+	CAN_TXHeader.StdId 					= CAN_ID;
 	CAN_TXHeader.ExtId 					= 0;
 	CAN_TXHeader.IDE					= CAN_ID_STD;
 	CAN_TXHeader.RTR 					= CAN_RTR_DATA;
@@ -49,7 +50,7 @@ bool CAN_Worker::init(){
 
 	// setting header RX message
 	CAN_RXHeader.DLC 					= CAN_PACK_SIZE;
-	CAN_RXHeader.StdId 					= 55;
+	CAN_RXHeader.StdId 					= CAN_ID;
 	CAN_RXHeader.ExtId 					= 0;
 	CAN_RXHeader.IDE					= CAN_ID_STD;
 	CAN_RXHeader.RTR 					= CAN_RTR_DATA;
@@ -96,8 +97,7 @@ bool CAN_Worker::enable_itterupt(){
 //################################## - Data's send - #################################//
 //####################################################################################//
 bool CAN_Worker::send_data(uint8_t *data){
-	uint32_t mb = HAL_CAN_GetTxMailboxesFreeLevel(hcan);
-	if (HAL_CAN_AddTxMessage(hcan, &CAN_TXHeader, data, &mb) != HAL_OK){
+	if (HAL_CAN_AddTxMessage(hcan, &CAN_TXHeader, data, &mailBox) != HAL_OK){
 		return false;
 		Error_Handler();
 	}
