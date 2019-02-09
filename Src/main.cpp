@@ -71,8 +71,8 @@ canw::CAN_Worker *can_worker_ptr = nullptr;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
-/* USER CODE BEGIN PFP */
 
+/* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,19 +110,14 @@ int main(void)
 	MX_GPIO_Init();
 	MX_CAN_Init();
 	/* USER CODE BEGIN 2 */
-	canw::CAN_Worker can = canw::CAN_Worker(&hcan);
+	canw::CAN_Worker can = canw::CAN_Worker(&hcan, 100, canw::can_pack_size::_8_BYTE);
 	can_worker_ptr = &can;
-	if (can.enable_itterupt() != true){
-		Error_Handler();
-	}
 	/* USER CODE END 2 */
-
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	uint8_t rx_data[] = {0, 0, 0};
 	while (1)
 	{
-		uint8_t data[3] = {1,2,3};
+		uint8_t data[8] = {1,2,3,4,5,6,7,8};
 		can.send_data(data);
 		HAL_Delay(5000);
 		/* USER CODE END WHILE */
